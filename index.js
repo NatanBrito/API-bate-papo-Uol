@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import chalk from "chalk";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import dayjs from "dayjs";
 import dotenv from "dotenv";
 // ...
@@ -11,10 +11,11 @@ app.use(cors());
 app.use(express.json());
 dotenv.config();
 app.listen(5000,()=>{console.log(chalk.bold.green("Silencio, estamos no AR!!!"))})
-let db=null;
 const mongoClient= new MongoClient("mongodb://localhost:27017");// .env nao funfando
 app.post("/participants", async (req,res)=>{
-    const user={name: 'xxx', lastStatus: Date.now()} 
+    const {name}=req.body;
+    console.log("cheguei",name)
+    const user={name, lastStatus: Date.now()} 
     try{
         await mongoClient.connect();
         const dataBaseUsers=mongoClient.db("users")
@@ -68,7 +69,7 @@ app.get("/messages",async (req,res)=>{
                userMessages.push(messages[i])
             }
         }
-        if(limit === undefined){
+        if(!limit){
             limit= messages.length;
         }
         res.send(userMessages.splice(0,parseInt(limit)))
@@ -78,3 +79,34 @@ app.get("/messages",async (req,res)=>{
         mongoClient.close();
     }
 })
+app.post("/status", async(req,res)=>{
+const user=req.headers.user;
+try{
+    await mongoClient.connect();
+    const list=mongoClient.db("users");
+    const findUser= await list.collection("users").findOne({name:user})
+    if(!findUser){
+        res.sendStatus(404);
+        return;
+    }
+    const updateTime= await list.collection("users").updateOne({name:user},{$set:{lastStatus: Date.now()}})
+    console.log("sou update",updateTime)
+    res.send(200)
+    console.log(findUser)
+    mongoClient.close();
+}catch(e){
+    res.sendStatus(404)
+    mongoClient.close();
+}
+})
+    setInterval(async()=>{
+        try{ 
+        await mongoClient.connect();
+        const list=mongoClient.db("users");
+        const removeUser= await list.collection("users").find({}).toArray();
+        console.log(removeUser[0]) 
+         }catch(e){
+             res.send("foi de base burrão")
+         }
+     },15000)
+
