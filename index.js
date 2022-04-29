@@ -4,6 +4,7 @@ import chalk from "chalk";
 import { MongoClient, ObjectId } from "mongodb";
 import dayjs from "dayjs";
 import dotenv from "dotenv";
+import Join from "join";
 // ...
 //npm run dev (pra derrubar/levantar o server de nov)
 const app=express();
@@ -18,7 +19,7 @@ app.post("/participants", async (req,res)=>{
     const user={name, lastStatus: Date.now()} 
     try{
         await mongoClient.connect();
-        const dataBaseUsers=mongoClient.db("users")
+        const dataBaseUsers=mongoClient.db("projeto-Uol")
         await dataBaseUsers.collection("users").insertOne(user)  
         res.sendStatus(200)
 
@@ -32,7 +33,7 @@ app.post("/participants", async (req,res)=>{
 app.get("/participants", async (req,res)=>{
     try{
         await mongoClient.connect();
-        const dataBase=mongoClient.db("users");
+        const dataBase=mongoClient.db("projeto-Uol");
         const returnUsers= await dataBase.collection("users").find({}).toArray();
         res.send(returnUsers);
         mongoClient.close();
@@ -47,7 +48,7 @@ app.post("/messages",async (req,res)=>{
     const message={from,to,text,type,time:dayjs().format('HH:MM:ss')};
     try{
         await mongoClient.connect();
-        const messages=mongoClient.db("messages")
+        const messages=mongoClient.db("projeto-Uol")
         await messages.collection("messages").insertOne(message)
         res.send(xx)
         mongoClient.close();
@@ -61,7 +62,7 @@ app.get("/messages",async (req,res)=>{
     let limit=(req.query.limit) // ver se ta certo e meter o parseInt no number
     try{
         await mongoClient.connect();
-        const db=mongoClient.db("messages")
+        const db=mongoClient.db("projeto-Uol")
         const messages= await db.collection("messages").find({}).toArray();
         const userMessages=[];
         for(let i=0;i<messages.length;i++){
@@ -83,7 +84,7 @@ app.post("/status", async(req,res)=>{
 const user=req.headers.user;
 try{
     await mongoClient.connect();
-    const list=mongoClient.db("users");
+    const list=mongoClient.db("projeto-Uol");
     const findUser= await list.collection("users").findOne({name:user})
     if(!findUser){
         res.sendStatus(404);
@@ -102,7 +103,7 @@ try{
     setInterval(async()=>{
         try{ 
         await mongoClient.connect();
-        const list=mongoClient.db("users");
+        const list=mongoClient.db("projeto-Uol");
         const removeUser= await list.collection("users").find({}).toArray();
         console.log(removeUser[0]) 
          }catch(e){
