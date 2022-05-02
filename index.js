@@ -144,31 +144,31 @@ try{
         console.log("comecei")
         try{ 
         await mongoClient.connect();
+        console.log("terminei com sucesso")
         const list=mongoClient.db("projeto-Uol");
         const usuario= await list.collection("users").find({}).toArray();
         mongoClient.close();
+        usuario.forEach(async(user)=>{
+            let now= Date.now();
+            let time= now-user.lastStatus;
+            if(time>15000){
+              try{
+                   await mongoClient.connect();
+                   const db=mongoClient.db("projeto-Uol")
+                   await db.collection("users").deleteOne({_id:user._id})
+                   await db.collection("messages").insertOne({from:user.name, to: 'Todos', text: 'sai da sala...', type: 'status', time:dayjs().format('HH:MM:ss') })
+                   
+                   mongoClient.close();
+              } catch(e){
+                  console.log("error")
+                  mongoClient.close();
+               }
+            }
+         })
          }catch(e){
              res.send("foi de base burrão")
              mongoClient.close();
          }
-         usuario.forEach(async(user)=>{
-             let now= Date.now();
-             let time= now-user.lastStatus;
-             if(time>15000){
-               try{
-                    await mongoClient.connect();
-                    const db=mongoClient.db("projeto-Uol")
-                    await db.collection("users").deleteOne({_id:user._id})
-                    await db.collection("messages").insertOne({from:user.name, to: 'Todos', text: 'sai da sala...', type: 'status', time:dayjs().format('HH:MM:ss') })
-                    console.log("terminei com sucesso")
-                    res.sendStatus(200)
-                    mongoClient.close();
-               } catch(e){
-                   res.sendStatus(409)
-                   mongoClient.close();
-                }
-             }
-          })
 
      },15000)
 
