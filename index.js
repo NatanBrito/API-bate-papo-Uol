@@ -17,7 +17,6 @@ const mongoClient= new MongoClient("mongodb://localhost:27017");// .env nao funf
 app.post("/participants", async (req,res)=>{
     const {name}=req.body;
     
-    console.log("cheguei",name)
     let user={name, lastStatus: Date.now()} 
     const userSchema= joi.object({
         name: joi.string().required(),
@@ -36,13 +35,11 @@ app.post("/participants", async (req,res)=>{
             res.status(409).send("repetido")
             return;
         }
-          console.log(search)
         await dataBaseUsers.collection("users").insertOne(user)  
         res.sendStatus(201)
 
         mongoClient.close();
     }catch(e){
-        console.log("deu erro patrão")
         res.sendStatus(422)
         mongoClient.close();
     }
@@ -79,10 +76,8 @@ app.post("/messages",async (req,res)=>{
         await mongoClient.connect();
         const messages=mongoClient.db("projeto-Uol")
         const onParticipant= await messages.collection("users").find({name:from}).toArray();
-        console.log("aqui",{onParticipant})
         if(onParticipant.length===0){
             res.sendStatus(422);
-            console.log("não achei ngm",{onParticipant})
             mongoClient.close();
             return;
         }
@@ -97,8 +92,7 @@ app.post("/messages",async (req,res)=>{
 })
 app.get("/messages",async (req,res)=>{
     const user=req.headers.user;
-    console.log({user})
-    let limit=(req.query.limit) // ver se ta certo e meter o parseInt no number
+    let limit=(req.query.limit) 
     try{
         await mongoClient.connect();
         const db=mongoClient.db("projeto-Uol")
@@ -131,9 +125,7 @@ try{
         return;
     }
     const updateTime= await list.collection("users").updateOne({name:user},{$set:{lastStatus: Date.now()}})
-    console.log("sou update",updateTime)
     res.send(200)
-    console.log(findUser)
     mongoClient.close();
 }catch(e){
     res.sendStatus(409)
@@ -141,10 +133,8 @@ try{
 }
 })
     setInterval(async()=>{
-        console.log("comecei")
         try{ 
         await mongoClient.connect();
-        console.log("terminei com sucesso")
         const list=mongoClient.db("projeto-Uol");
         const usuario= await list.collection("users").find({}).toArray();
         mongoClient.close();
@@ -160,7 +150,6 @@ try{
                    
                    mongoClient.close();
               } catch(e){
-                  console.log("error")
                   mongoClient.close();
                }
             }
